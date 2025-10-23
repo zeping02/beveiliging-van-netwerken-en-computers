@@ -76,10 +76,7 @@ Maak op de _Client_ een nieuwe SSH keypair aan door middel van het commando `ssh
 ```bash
 ssh-keygen -t ed25519
 ```
-
-```text
 Dit is een goed, veilig en efficient algoritme dat door bijna alle servers wordt onderseunt is.
-```
 
 > ❓ Welke bestanden heeft dit commando aangemaakt, en waar dienen deze bestanden voor?
 
@@ -158,9 +155,13 @@ scp <bestand> <gebruikersnaam>@<server_ip>:/pad/op/server
 
 > ❓ Hoe kan je vanop de client een bestand van de server downloaden?
 
+Om vanop de client een bestand van de server te downloaden, gebruik he hetzelfde commando maar in omgekeerde volgorde:
+
 ```shell
-<fill in answer>
+scp student@192.168.56.101:/home/student/test2.txt ~/Downloads/
 ```
+
+Je moet er dus wel voor zorgen dat de client ook de ssh key van de server bevat in de authorized_keys, anders zal de verbinding denied worden.
 
 Maak nu ook op de _Server_ een SSH keypair aan. Hoe kan je de Server toegang geven tot de client, zonder manueel zaken te copy-pasten uit verschillende virtuele machines?
 
@@ -173,19 +174,34 @@ Door middel van SSH kan je ook commando's en scripts remote uitvoeren in plaats 
 * Maak een script op de server dat de huidige processen print. Voer dit script uit door één commando uit te voeren op de _Client VM_.
 
   ```shell
-  <fill in answer>
+  #Script maken op de server
+  student@security-server:~$ echo '#!/bin/bash' > show_processes.sh
+  student@security-server:~$ echo 'ps aux' >> show_processes.sh
+  student@security-server:~$ chmod +x show_processes.sh
+
+  #Script uitvoeren op de server zelf
+  ./show_processes.sh
   ```
+- ```echo '#!/bin/bash' > show_processes.sh```: Maakt een nieuw bestand en plaatst de **sheban** (#!) erin, dit zorgt ervoor dat het systeem weet dat het script met de Bash-shell moet worden uitgevoerd.
+- ```echo 'ps aux' >> show_processes.sh```: Voegt het commando ```ps aux``` toe aan het script. ```ps aux``` print een gedetailleerde lijst van alle huidige processen op de server, dit is de actie die het script moet uitvoeren.
+- ```chmod +x show_processes.sh```: maakt het script **uitvoerbaar** (-x), zonder dit kan het bestand niet als een commando worden uitgevoerd.
 
 * Voer dit script op de nu opnieuw uit maar zorg er ditmaal voor dat de output wordt opgeslagen op de client.
 
   ```shell
-  <fill in answer>
+  #Script uitvoeren op de client zelf terwijl deze zich op de server bevindt.
+  ssh student@192.168.132.1 "./show_processes.sh"
+  #Eventueel opslaan in een bestand
+  ssh student@192.168.132.1 "./show_processes.sh" > processes_text.txt
   ```
 
 * Maak een script op de client en voer dit uit op de _Server VM_ door middel van één commando op de _Client VM_. Doe dit zonder het script te kopiëren naar de _Server VM_.
 
+
+
   ```shell
-  <fill in answer>
+  #Dit is een krachtige manier waarbij je de inhoud van een lokaal script op de Client doorstuurt (pipet) naar de Server om daat direct te worden uitgevoerd, zonder dat het bestand ooit op de Server wordt opgeslagen.
+  ssh student@<server_adres> 'bash -s' < client_script.sh
   ```
 
 Hoe kan je door één commando uit te voeren op de **Client VM**, er voor zorgen dat de _Server_ kan SSH-en naar de _Client_?
