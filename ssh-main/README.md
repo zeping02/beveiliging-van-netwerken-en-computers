@@ -105,6 +105,7 @@ Ga verder met deze opdracht om beide opties uit te proberen.
 ## Public keys delen via GitHub.com
 
 Het commando `ssh-import-id` kan gebruikt worden om publieke SSH keys te importeren van online platformen zoals GitHub.com.
+Na deze toe te voegen van de bv. client, deze keys worden dan toegevoegd aan de authorized_keys bij de server en kan dus de client verbinding maken en bestanden versturen via de ssh keys.
 
 > Merk op! Dit werkt enkel op [GitHub.com](https://GitHub.com), niet op de UGent GitHub.
 
@@ -133,6 +134,17 @@ Het commando `ssh-import-id` kan gebruikt worden om publieke SSH keys te importe
 1. Maak een nieuw ssh keypair op de _Internal VM_.
 1. Pas nu manueel het juiste configuratiebestand aan om de _Internal VM_ te laten ssh-en naar de server VM.
 
+  -> Manueel toevoegen is gewoon de authorized_keys van de server aanpassen zodat de keys van de internal server of eventueel andere services vertrouwd worden bij de server en dus verbinding kan maken.
+
+Dit kan eenvoudig bereikt worden met volgende commando's:
+```shell
+mkdir -p ~/.ssh
+chmod 700 ~/.ssh
+# paste your client's public key line here:
+echo "ssh-ed25519 AAAA... student@security-client" >> ~/.ssh/authorized_keys
+chmod 600 ~/.ssh/authorized_keys
+```
+
 ## Bestandsbeheer
 
 In het ssh-pakket zit een utility om op een beveiligde manier aan ftp te doen. Dit laat toe om bestanden op een veilige manier uit te wisselen via SSH. `scp` is een beperkt commando dat eenvoudig toelaat om deze functionaliteit te gebruiken. Test uit.
@@ -140,7 +152,8 @@ In het ssh-pakket zit een utility om op een beveiligde manier aan ftp te doen. D
 > ❓ Hoe kan je vanop de client een bestand kopieren naar de server?
 
 ```shell
-<fill in answer>
+via scp met de volgende syntax:
+scp <bestand> <gebruikersnaam>@<server_ip>:/pad/op/server
 ```
 
 > ❓ Hoe kan je vanop de client een bestand van de server downloaden?
