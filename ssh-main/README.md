@@ -158,7 +158,7 @@ scp <bestand> <gebruikersnaam>@<server_ip>:/pad/op/server
 Om vanop de client een bestand van de server te downloaden, gebruik he hetzelfde commando maar in omgekeerde volgorde:
 
 ```shell
-scp student@192.168.56.101:/home/student/test2.txt ~/Downloads/
+scp student@192.168.132.1:/home/student/test2.txt ~/Downloads/
 ```
 
 Je moet er dus wel voor zorgen dat de client ook de ssh key van de server bevat in de authorized_keys, anders zal de verbinding denied worden.
@@ -202,6 +202,7 @@ Door middel van SSH kan je ook commando's en scripts remote uitvoeren in plaats 
   ```shell
   #Dit is een krachtige manier waarbij je de inhoud van een lokaal script op de Client doorstuurt (pipet) naar de Server om daat direct te worden uitgevoerd, zonder dat het bestand ooit op de Server wordt opgeslagen.
   ssh student@<server_adres> 'bash -s' < client_script.sh
+  #Dikke pizdets da werkt niet
   ```
 
 Hoe kan je door één commando uit te voeren op de **Client VM**, er voor zorgen dat de _Server_ kan SSH-en naar de _Client_?
