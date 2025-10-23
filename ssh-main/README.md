@@ -19,6 +19,17 @@ sudo systemctl start ssh
 
 ## Turn off password authentication
 
+To turn off the password authentication you have to make change in th esshd_config file.
+
+To make changes in this file simply run the command:
+- ```sudo nano /etc/ssh/sshd_config```
+
+In this file you will see tons of configuration, but you only need to chane one word in the line:
+
+- ```#PasswordAuthentication yes```
+
+Simply change the ```yes``` to ```no``` and remove the ```#```.
+
 Als eerste opdracht zet je op iedere VM wachtwoord authenticatie uit.
 
 ## Public Key Authentication
@@ -28,7 +39,18 @@ Authenticatie met wachtwoord is zeer gevaarlijk, daarom wordt dit niet gebruikt 
 > ❓ Echter, Public Key Authenticatie kan nog steeds gevaarlijk zijn. Stel dat je een keypair gebruikt met RSA en een sleutelgrootte van 1024 bits. Is dit een veilige keuze? Waarom wel of niet?
 
 ```txt
-<fill in answer>
+Een RSA-sleutel van 1024 bits kan met moderne hardware relatief snel worden gekraakt.
+- De beveiliging van RSA hangt af van hoe moeilijk het is om een groot getal te ontbinden in priemfactoren.
+- Dankzij technologische vooruitgang (snellere computers en betere algoritmens) is 1024-bit RSA tegenwoordig niet meer voldoende, het is kwetsbaar voor goed uitegruste aanvallers.
+
+Aanbevolen minimum
+- De huidige minimale veilige lengte voor RSA is 2048 bits.
+- Voor lange termijnbeveiliging (meer dan 10 jaar) raadt men zelfd 4096 buts aan.
+
+Alternatief: moderne algoritmes
+- In plaats van RSA kun je beter elliptische-curvevryptografie (ECC) gebruiken:
+  - Bijvoorbeeld: ED25519 of ECDSA
+  - Deze bieden hogere veiligheid met kleinere sleutels en zijn sneller.
 ```
 
 Drie bestanden zijn belangrijk voor SSH public private keypair authenticatie.
@@ -41,19 +63,36 @@ Drie bestanden zijn belangrijk voor SSH public private keypair authenticatie.
 > ❓ Stel dat je toegang wilt krijgen tot een server. Welk bestand moet je doorgeven aan de beheerder van de server om toegang te krijgen?
 
 ```txt
-<fill in answer>
+Je moet het publieke sleutelbestand doorgeven aan de beheerder van de server.
+~/.ssh/id_<algo>.pub
+Dit bestand de publieke sleutel van jouw keypair.
+De beheerder plaatst de inhoud van dit bestand in: ~/.ssh/authorized_keys van de gebruiker op de serber waar jij wilt inloggen.
+
+NOOIT mag je ~/.ssh/id_<algo> doorgeven, dit is de private keu en die moet je geheim houden.
 ```
 
 Maak op de _Client_ een nieuwe SSH keypair aan door middel van het commando `ssh-keygen`. Gebruik een algoritme dat veilig is, maar toch zo efficient mogelijk. Let wel op dat je geen té exotisch algoritme gebruikt zodat het nog steeds bruikbaar is op de meeste servers.
 
-```shell
-<fill in answer>
+```bash
+ssh-keygen -t ed25519
+```
+
+```text
+Dit is een goed, veilig en efficient algoritme dat door bijna alle servers wordt onderseunt is.
 ```
 
 > ❓ Welke bestanden heeft dit commando aangemaakt, en waar dienen deze bestanden voor?
 
 ```txt
-<fill in answer>
+Dit commando maakt in de map `~/.ssh/` **twee bestanden** aan:
+1. id_ed25519 -> de private key.
+  - Dit is de geheime sluetel.
+  - Ze wordt nooit gedeeld met iemand.
+  - De SSH-client gebruikt deze sleutel om te bewijzen dat jij de juiste gebruiker bent.
+2. id_ed25519.pub -> de public key
+  - Dit is de publieke sleutel.
+  - Deze mag je wel delen met de serverbeheerder of online key repositories (zoals GitHub).
+  - De inhoud van dit bestand wordt toegevoegd aan het bestand ~/.ssh/authorized_keys op server, zodat jij via jouw private key kan inloggen.
 ```
 
 Nu moet de correcte sleutel van de _Client_ toegevoegd worden aan `authorized_keys` op de _Server_. Dit kan je op twee manieren doen:
@@ -74,14 +113,17 @@ Het commando `ssh-import-id` kan gebruikt worden om publieke SSH keys te importe
    > ❓ Wat is de foutmelding die je krijgt aan de kant van de _Client_? Waarom krijg je deze foutmelding?
 
    ```txt
-   <fill in answer>
+   Bij het uitvoeren van de commando:
+    - ssh-import-id gh:zeping02
+   ERROR No matching keys found for [gh:zeping02]
+   Dit betekent dat GitHub geen publieke SSh-sleutels kan vinden op het profiel zeping02.
    ```
 
 1. Upload de publieke SSH key die je net hebt aangemaakt naar je github.com profiel. Voor meer informatie, zie [Adding a new SSH key to your GitHub account](https://docs.github.com/en/authentication/connecting-to-github-with-ssh/adding-a-new-ssh-key-to-your-github-account).
 1. Importeer deze key in de _Server_ door middel van het commando `ssh-import-id`.
 
    ```shell
-   <fill in answer>
+   ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIPBoPtosoQDU0Dter2jJhNNakliBSCq/MiW/q44pbYs/ student@security-client
    ```
 
 1. Probeer nu te ssh-en van de client naar de server. Dit zou nu wel moeten lukken.
