@@ -201,14 +201,33 @@ Door middel van SSH kan je ook commando's en scripts remote uitvoeren in plaats 
 
   ```shell
   #Dit is een krachtige manier waarbij je de inhoud van een lokaal script op de Client doorstuurt (pipet) naar de Server om daat direct te worden uitgevoerd, zonder dat het bestand ooit op de Server wordt opgeslagen.
-  ssh student@<server_adres> 'bash -s' < client_script.sh
-  #Dikke pizdets da werkt niet
+  ssh student@<server_adres> 'bash -s' < <client_script.sh>
+  ssh student@192.168.132.1 'bash -s' < client.sh
+  #Output blijft nog altijd bij de client i geuss
+  cat <script.sh> | ssh student@<serverip> "bash -s"
+  cat client.sh | ssh student@192.168.132.1 "bash -s"
   ```
 
 Hoe kan je door één commando uit te voeren op de **Client VM**, er voor zorgen dat de _Server_ kan SSH-en naar de _Client_?
 
+
+```txt
+Hiervoor kan je gebruik maken van sco en cat. het doel is om in de server zijn authorized_key jouw client_public key te steken zodat de server zonder wachtwoord kan inloggen op de client.
+
+Wat er dus normaal moet gebeuren:
+1. De public key van de server kopieren (~/.ssh/id_ed25519.pub)
+2. Die plakkenin ~/.ssh/authorized_keys van de client.
+
+Maar je kan dit dus doen via 1 commando vanuit de clinet via scp en cat.
+```
+
 ```shell
-<fill in answer>
+ssh student@192.168.132.1 "cat ~/.ssh/id_ed25519.pub" >> ~/.ssh/authorized_keys
+
+of als je scp wilt gebruiken:
+
+scp student@192.168.132.1:~/.ssh/id_ed25519.pub /tmp/server_key.pub
+cat /tmp/server_key.pub >> ~/.ssh/authorized_keys
 ```
 
 ## Toegangscontrole
@@ -221,22 +240,34 @@ Pas de configuratie van de server aan zodat
 
 Daarnaast kan je ook via `/etc/hosts.allow` en `/etc/hosts.deny` de toegang tot je machine te beperken. Welke volgorde wordt gehanteerd om uit te maken of een machine al dan geen toegang krijgt? Zoek het antwoord op in de man-pages maar voer dit niet uit!
 
+We willen dus dat enkel de client nog kan inloggen op de ssh van de server en de server zelf niet meer.
+
+open het volgend bestand
+
+`sudo nano /etc/ssh/sshd_config`
+
+en voeg volgende regel toe (of pas aan als ze al bestaat):
+
+`AllowUsers student@192.168.132.2` (ip address van de client)
+
+Dit betekent nu dat alleen de gebruiker `student` die inlogt vanaf het ip address 192.168.123.2 mag verbinden via SSH.
+
+
+
 ## SSH vanop je host zelf
 
 1. Indien je dit nog niet hebt, installeer SSH op je host machine en maak een SSH keypair aan. Upload de publieke SSH key ook naar je github.com profiel.
 1. Importeer deze key ook in de _Server VM_.
 1. Probeer te SSH-en van je host naar de server virtuele machine. Hiervoor moet je wel eerst je VM bereikbaar maken vanop je host machine. Dit kan je doen door in de settings van je virtuele machine, in Network Adapter 1, een nieuwe port forwarding regel aan te maken die poort `22` van de virtuele machine doorstuurt naar poort `9999` op de host.
 
-![vm-port-forwarding](/img/vm-port-forwarding.png)
-
-![vm-port-forwarding-rule](/img/vm-port-forwarding-rule.png)
+![vm-port-forwarding](image.png)
+![vm-port-forwarding-rule](image-1.png)
 
 Na dit in te stellen kan je naar de _Server VM_ ssh-en door op je host machine te ssh-en naar `127.0.0.1` poort `9999`. Als dit niet werkt, probeer methodologisch te debuggen waar het probleem zit. Aan de hand van welke foutmelding je specifiek krijgt kan je veel leren over waar de fout zit. Controleer ook stap voor stap alle zaken die correct moeten zijn om dit mogelijk te maken.
 
 Welk commando heb je gebruikt om vanaf de host te ssh-en naar de server vm?
 
 ```txt
-<fill in answer>
 ```
 
 ## TCP Port Forwarding
