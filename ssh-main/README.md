@@ -267,7 +267,8 @@ Na dit in te stellen kan je naar de _Server VM_ ssh-en door op je host machine t
 
 Welk commando heb je gebruikt om vanaf de host te ssh-en naar de server vm?
 
-```txt
+```shell
+ssh -p 9999 student@127.0.0.1
 ```
 
 ## TCP Port Forwarding
@@ -293,22 +294,64 @@ Hou zeker de theorie over SSH port forwarding bij de hand voor volgende vragen.
 
 > ❓ Hoe kan je deze webserver beschikbaar maken op `http://localhost:8080` vanaf de _Client VM_? Gebruik je hiervoor local of remote port forwarding?
 
+- Hiervoor gebruik je local forwarding, omdat de poort op de client lokaal beschikbaar wordt gemaakt.
+
 ```shell
-<fill in answer>
+ssh -L 8080:192.168.135.2:80 student@192.168.132.1
 ```
+- `-L`: Local port forwarding
+- `8080`: Poort op de client
+- `192.168.135.2:80`: De webserver op de Internal VM
+- `student@192.168.132.1`: SSh naar de server, die als brug fungeert.
+
+Hierna kan je dus op de Client VM surfen naar: `http://localhost:8080` en zie je de webpagina van de Internal VM.
 
 > ❓ Probeer dit nu eens met SSH. Hoe kan je ervoor zorgen dat de _Client_ kan SSH-en naar de _Internal VM_ via `localhost:8888`? Is dit local of remote port forwarding?
 
+- Hiervoor gebruik je ook Local Forwarding. We maken de SSH-poort van de Internal VM beschikbaar vie de client.
+
 ```shell
-<fill in answer>
+ssh -L 8888:192.168.135.2:22 student@192.168.132.1
+```
+
+- `-L`: Maakt een local tunnel
+- `8888`: Lokale poort op de client
+- `192.168.135.2:22`: SSH-poort van de terminal VM
+- De verbinding loopt via de serber (`192.168.132.1`)
+
+Daarna kan je via de *Client VM* inloggen op de terminal VM via:
+
+```shell
+ssh -p 8888 student@localhost
 ```
 
 > ❓ Hoe kan je er voor zorgen dat de SSH-poort (poort 22) van de _Internal VM_ beschikbaar wordt op poort 8888 van de server? Test grondig uit of je vanaf de client een connectie kan maken met poort 8888 van de server en dat er op deze manier veilig kan worden ingelogd op de _Internal VM_. Doe dit met remote port forwarding.
 
 Merk op dat remote port forwarding standaard uit staat op Ubuntu. Dit kan je aanzetten door de `sshd_config` op de _Server VM_ aan te passen. Voor meer informatie, zie de "Remote SSH Port forwarding" sectie in [How to setup SSH Tunneling or port forwarding in Linux](https://utho.com/docs/tutorial/how-to-setup-ssh-tunneling-or-port-forwarding-in-linux/).
 
+
 ```shell
-<fill in answer>
+#Eerst moet je in `etc/ssh/sshd_config` op de Server VM dit aanzetten:
+GatewayPorts yes
+AllowTcpForwarding yes
+#En daarna ssh herstarten:
+sudo systemctl restart ssh
+```
+
+```shell
+#Dan voer je op de Server VM het volgende commando uit:
+ssh -R 8888:192.168.135.2:22 student@192.168.132.1
+```
+
+- `-R`: remote port forwarding
+- `8888`: Poort op de server
+- `192.168.135.2:22`: SSH-poort van de terminal VM
+- Verkeer dat naar poort 8888 op de serv er gaat, wordt doorgestuurd naar de internal VM.
+
+Van de Client VM kun je daarna rechtstreeks verbinden met de Internal VM via de server.
+
+```shell
+ssh -p 8888 student@192.168.132.1
 ```
 
 ## Man-in-the-middle attack
